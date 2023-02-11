@@ -4,7 +4,7 @@
 #include "webPage.h";
 
 const int MIN = 5;  // between the sensor and the water when the tank is full => min 2 cm for this sensor
-const int MAX = 84; // between the sensor and the bottom of the tank => maximum 400 cm for this sensor
+int MAX = 84; // between the sensor and the bottom of the tank => maximum 400 cm for this sensor
 int percentage = 0;
 const int trigPin = 16;
 const int echoPin = 5;
@@ -17,8 +17,8 @@ const long interval = 1000;
 unsigned long previousMillis = 0;
 
 // WiFi Credentials
-const char *ssid = "YOUR_SSID";
-const char *password = "YOUR_PASSWORD";
+const char *ssid = "SSID";
+const char *password = "password";
 
 
 // Create an instance for web server and websocket server
@@ -47,14 +47,18 @@ void setup()
   server.on("/", rootEndPointResponse);
   server.begin();
   webSocket.begin();
+  // webSocket.onEvent(webSocketEvent);
   //-----------------------------------------------
 
   // Ultrasonic pins
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
 }
+
 void loop()
 {
+    if(Serial.available()>0) MAX = Serial.readString().toInt();
+
   //-----------------------------------------------
   webSocket.loop(); 
   server.handleClient();
@@ -102,9 +106,35 @@ void read_sensor()
   Serial.println(distance);
   Serial.print(percentage);
   Serial.println("%");
+  Serial.println(MAX);
 }
 
 void rootEndPointResponse()
 {
   server.send(200,"text/html", webpageCode);
 }
+
+// void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t welength)
+// {
+//   String payloadString = (const char *)payload;
+//   Serial.print("payloadString= ");
+//   Serial.println(payloadString);
+
+//   if(type == WStype_TEXT) //receive text from client
+//   {
+//     byte separator=payloadString.indexOf('=');
+//     String var = payloadString.substring(0,separator);
+//     Serial.print("var= ");
+//     Serial.println(var);
+//     String val = payloadString.substring(separator+1);
+//     Serial.print("val= ");
+//     Serial.println(val);
+//     Serial.println(" ");
+
+//     if(var == "LEDonoff")
+//     {
+//       LEDonoff = false;
+//       if(val == "ON") LEDonoff = true;
+//     }
+//   }
+// }
